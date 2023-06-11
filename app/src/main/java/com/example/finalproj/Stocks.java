@@ -42,14 +42,15 @@ public class Stocks extends AppCompatActivity {
         getDetails = findViewById(R.id.id_getDetails);
         moneyText = findViewById(R.id.textView4);
 
-        User user = (User) getIntent().getSerializableExtra("User");
+        User user = (User) getIntent().getSerializableExtra("user");
         moneyText.setText("Balance: "+user.getMoney());
         getDetails.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 String stocks = stockName.getText().toString();
                 Intent intent = new Intent(Stocks.this, StockView.class);
-                intent.putExtra(CODE,stocks);
+                intent.putExtra("name",stocks);
+                intent.putExtra("user", user);
                 startActivity(intent);
                 Log.d("pOOP","HI");
             }

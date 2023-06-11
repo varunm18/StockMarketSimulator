@@ -87,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
                         User user = new User(name, pass, money, transactions);
 
                         Intent intent = new Intent(MainActivity.this, Stocks.class);
-                        intent.putExtra("User", user);
+                        intent.putExtra("user", user);
                         startActivity(intent);
                     }
                     else {
@@ -123,12 +123,14 @@ public class MainActivity extends AppCompatActivity {
                     Transaction test = new Transaction("init", "init", "init", 0, 0);
                     ArrayList<Transaction> testList = new ArrayList<Transaction>();
                     testList.add(test);
-                    reference.child(name).setValue(new User(name, pass, 10000, testList)).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    User user = new User(name, pass, 10000, testList);
+                    reference.child(name).setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(Task<Void> task) {
                             if(task.isSuccessful())
                             {
                                 Intent intent = new Intent(MainActivity.this, Stocks.class);
+                                intent.putExtra("user", user);
                                 startActivity(intent);
                             }
                         }

@@ -4,14 +4,21 @@ package com.example.finalproj;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.cepheuen.elegantnumberbutton.view.ElegantNumberButton;
+import com.google.android.material.datepicker.MaterialDatePicker;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
@@ -27,31 +34,148 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.time.LocalDate;
+import java.time.Year;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Locale;
+import java.util.Scanner;
+
+import androidx.core.util.Pair;
+
+import com.google.android.material.datepicker.MaterialPickerOnPositiveButtonClickListener;
 
 public class StockView extends AppCompatActivity {
     String name;
     GraphView graph;
-    TextView stock_name, priceText;
+    TextView dateText, priceText, nameText, balanceText;
     EditText amt;
-    Button buy, back;
+    Button buy, back, dateButton, create;
+    Spinner dropdown;
+    ArrayList<String> list;
+    ElegantNumberButton increment;
+    String date = "";
+    String interval = "";
+    int frequency = 0;
+    boolean first = true;
+    double price = 0;
+    double balance = 0;
+    User user;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_stock_view);
 
-        graph = (GraphView)findViewById(R.id.id_graph);
-        stock_name = findViewById(R.id.textView2);
-        priceText = findViewById(R.id.textView3);
+        graph = (GraphView)findViewById(R.id.graph);
+        increment = (ElegantNumberButton)findViewById(R.id.number_button);
+        dateText = findViewById(R.id.date);
+        priceText = findViewById(R.id.price);
         back = findViewById(R.id.back);
+        buy = findViewById(R.id.buy);
+        amt = findViewById(R.id.amount);
+        dateButton = findViewById(R.id.changeDate);
+        dropdown = findViewById(R.id.spinner);
+        create = findViewById(R.id.create);
+        nameText = findViewById(R.id.stockName);
+        balanceText = findViewById(R.id.balance);
 
-        name = getIntent().getStringExtra(Stocks.CODE);
+        name = getIntent().getStringExtra("name");
+        user = (User) getIntent().getSerializableExtra("user");
+        balance = user.getMoney();
+
+        nameText.setText(name);
+        balanceText.setText("Balance: $"+String.format("%.2f",balance));
+
         new AsyncThread().execute(name);
+
+        MaterialDatePicker.Builder<Pair<Long, Long>> materialDateBuilder = MaterialDatePicker.Builder.dateRangePicker();
+        materialDateBuilder.setTitleText("SELECT A DATE");
+        final MaterialDatePicker materialDatePicker = materialDateBuilder.build();
+        Log.d("hi", "reached34");
+
+        dateButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                materialDatePicker.show(getSupportFragmentManager(), "MATERIAL_DATE_PICKER");
+            }
+        });
+
+        materialDatePicker.addOnPositiveButtonClickListener(new MaterialPickerOnPositiveButtonClickListener() {
+            @Override
+            public void onPositiveButtonClick(Object selection) {
+                date = materialDatePicker.getHeaderText();
+                Log.d("hi", "date: "+date);
+                dateText.setText(date);
+            }
+        });
+
+        list = new ArrayList<String>();
+        list.add("Select Interval:");
+        list.add("Minute");
+        list.add("Hour");
+        list.add("Day");
+        list.add("Week");
+        list.add("Month");
+        list.add("Quarter");
+        list.add("Year");
+
+        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<String>(this, R.layout.support_simple_spinner_dropdown_item, list);
+        dropdown.setAdapter(spinnerAdapter);
+        dropdown.setPrompt("Select Interval");
+        dropdown.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                if(i!=0){
+                    interval = list.get(i).toLowerCase();
+                }
+                else
+                {
+                    interval = "";
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+            }
+        });
+
+        increment.setOnClickListener(new ElegantNumberButton.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                frequency = Integer.parseInt(increment.getNumber());
+                Log.d("hi", "increment: "+frequency);
+            }
+        });
+
+        create.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(date=="")
+                {
+                    Toast.makeText(getApplicationContext(),"Select a Date Range", Toast.LENGTH_SHORT).show();
+                }
+                else if(frequency<=0)
+                {
+                    Toast.makeText(getApplicationContext(),"Frequency Multiplier has to be Positive", Toast.LENGTH_SHORT).show();
+                }
+                else if(interval=="")
+                {
+                    Toast.makeText(getApplicationContext(),"Select an Interval", Toast.LENGTH_SHORT).show();
+                }
+                else
+                {
+                    Log.d("hi", "name: "+name+"date: "+date+"freq: "+frequency+"interval: "+interval);
+                    new AsyncThread().execute(name);
+                }
+            }
+        });
 
         back.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(StockView.this, Stocks.class);
+                intent.putExtra("user", user);
                 startActivity(intent);
             }
         });
@@ -63,9 +187,18 @@ public class StockView extends AppCompatActivity {
         protected JSONObject doInBackground(String... strings) {
             try {
                 JSONObject json;
-
-                String id = strings[0];
-                URL url = new URL("https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=" + id + "&interval=1min&apikey=QVU2FF3Q9NWDO8U1");
+                Log.d("hi", "name: "+name+"\ndate: "+date+"\nfreq: "+frequency+"\ninterval: "+interval);
+                URL url;
+                if(first)
+                {
+                    url = new URL("https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol="+name+"&interval=60min&apikey=QVU2FF3Q9NWDO8U1");
+                }
+                else
+                {
+                    String[] dates = convertDateRange(date);
+                    Log.d("hi", "date 1: "+dates[0]+"\ndate 2: "+dates[1]);
+                    url = new URL("https://api.polygon.io/v2/aggs/ticker/"+name+"/range/"+frequency+"/"+interval+"/"+dates[0]+"/"+dates[0]+"?adjusted=true&sort=asc&limit=50000&apiKey=k_NcvppBbThJp93qy0WcXHL_AtIeuDDB");
+                }
                 Log.d("url", url.toString());
                 URLConnection connect = url.openConnection();
                 InputStream stream = connect.getInputStream();
@@ -82,6 +215,12 @@ public class StockView extends AppCompatActivity {
             } catch (JSONException | MalformedURLException e) {
                 e.printStackTrace();
             } catch (IOException e) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getApplicationContext(),"Error: Incorrect Date Range. Only allowed 5 calls/min and a 2 year range.", Toast.LENGTH_SHORT).show();
+                    }
+                });
                 e.printStackTrace();
             }
             return null;
@@ -92,31 +231,38 @@ public class StockView extends AppCompatActivity {
             super.onPostExecute(json);
 
             try {
-                JSONObject time = json.getJSONObject("Time Series (1min)");
-                JSONArray arr = time.names();
-                String lastKey = (String) arr.get(arr.length()-1);
-                String price = time.getJSONObject(lastKey).getString("1. open");
-                Log.d("Poop", price);
-                ArrayList<Double> priceList = new ArrayList<>();
-
-
-                for(int i = arr.length()-1; i >= 0; i--){
-                    priceList.add(Double.parseDouble(time.getJSONObject(arr.get(i).toString()).getString("1. open")));
-                }
-
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        String name = null;
-                        try {
-                            name = json.getJSONObject("Meta Data").getString("2. Symbol").toUpperCase();
-                        } catch (JSONException e) {
-                            e.printStackTrace();
+                if(first)
+                {
+                    JSONObject time = json.getJSONObject("Time Series (60min)");
+                    JSONArray arr = time.names();
+                    price = Double.parseDouble(time.getJSONObject((String)arr.get(0)).getString("1. open"));
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            priceText.setText("Price per Share: $"+String.format("%.2f",price));
                         }
-                        priceText.setText(priceList.get(priceList.size()-1)+"");
-                        stock_name.setText("Stock ID: "+name);
+                    });
+                    first = false;
+                }
+                else
+                {
+                    JSONArray results = json.getJSONArray("results");
+                    Log.d("hi", "result: "+results);
+
+                    LineGraphSeries<DataPoint> series = new LineGraphSeries<DataPoint>();
+                    double price;
+                    graph.removeAllSeries();
+                    for(int i = 0; i<results.length(); i++)
+                    {
+                        price = results.getJSONObject(i).getDouble("c");
+                        series.appendData(new DataPoint(i,price), true, 500);
                     }
-                });
+                    if(results.length()<2)
+                    {
+                        Toast.makeText(getApplicationContext(),"Choose Larger Range for Graph", Toast.LENGTH_LONG).show();
+                    }
+                    graph.addSeries(series);
+                }
 
 //                buy.setOnClickListener(new View.OnClickListener() {
 //                    @Override
@@ -127,21 +273,57 @@ public class StockView extends AppCompatActivity {
 //                });
 
 //                Log.d("Hi", "" + startinPrice);
-
-                LineGraphSeries<DataPoint> series = new LineGraphSeries<DataPoint>();;
-                double x,y;
-                x=0;
-                graph.removeAllSeries();
-                for(int i = 0; i< priceList.size(); i++){
-                    x+=1;
-                    y = priceList.get(i);
-                    //Log.d("items", ""+priceList.get(i));
-                    series.appendData(new DataPoint(x,y), true, 500);
-                }
-                graph.addSeries(series);
-            } catch (JSONException e) {
+            } catch (Exception e) {
+                Toast.makeText(getApplicationContext(),"Error: Invalid Stock. Try Again", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(StockView.this, Stocks.class);
+                intent.putExtra("user", user);
+                startActivity(intent);
                 e.printStackTrace();
             }
         }
     }
+
+    public static String[] convertDateRange(String dateRange) {
+        // Split the input string into two date parts
+        String[] parts = dateRange.split(" – ");
+        String startDate = parts[0];
+        String endDate = parts[1];
+
+        int count = dateRange.split(String.valueOf(","), -1).length - 1;
+        if(count==1)
+        {
+            String year = endDate.substring(endDate.length() - 4);
+            dateRange = startDate+", "+year+" – "+endDate;
+            parts = dateRange.split(" – ");
+            startDate = parts[0];
+            endDate = parts[1];
+        }
+
+        int currentYear = Year.now().getValue();
+
+        LocalDate start;
+        LocalDate end;
+
+        if (startDate.contains(",")) {
+            start = parseDate(startDate);
+            end = parseDate(endDate);
+        } else {
+            start = parseDate(startDate + ", " + currentYear);
+            end = parseDate(endDate + ", " + currentYear);
+        }
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        String startFinal = start.format(formatter);
+        String endFinal = end.format(formatter);
+
+        String[] result = {startFinal, endFinal};
+        return result;
+    }
+
+    private static LocalDate parseDate(String dateStr) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM d, yyyy", Locale.ENGLISH);
+        return LocalDate.parse(dateStr, formatter);
+    }
+
 }
