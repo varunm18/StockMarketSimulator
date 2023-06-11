@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "442331700216",
+    "project_id": "stocksim-c1ebe",
+    "storage_bucket": "stocksim-c1ebe.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:442331700216:android:22e4654b2866c568a7140d",
+        "android_client_info": {
+          "package_name": "com.example.finalproj"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "442331700216-u5dc21knlhdihkehgh45jtv014qd64e2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBbR4k4VyIzJz4Sb3UMAtoJJ_AAZGNRD1Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "442331700216-u5dc21knlhdihkehgh45jtv014qd64e2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
