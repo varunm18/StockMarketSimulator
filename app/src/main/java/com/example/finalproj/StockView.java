@@ -18,7 +18,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cepheuen.elegantnumberbutton.view.ElegantNumberButton;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.datepicker.MaterialDatePicker;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
@@ -34,11 +38,13 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.Year;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Locale;
 import java.util.Scanner;
 
@@ -62,6 +68,8 @@ public class StockView extends AppCompatActivity {
     double price = 0;
     double balance = 0;
     User user;
+    double amount = 0;
+    DatabaseReference reference;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -79,6 +87,8 @@ public class StockView extends AppCompatActivity {
         create = findViewById(R.id.create);
         nameText = findViewById(R.id.stockName);
         balanceText = findViewById(R.id.balance);
+
+        reference = FirebaseDatabase.getInstance().getReference("users");
 
         name = getIntent().getStringExtra("name");
         user = (User) getIntent().getSerializableExtra("user");
@@ -167,6 +177,40 @@ public class StockView extends AppCompatActivity {
                 {
                     Log.d("hi", "name: "+name+"date: "+date+"freq: "+frequency+"interval: "+interval);
                     new AsyncThread().execute(name);
+                }
+            }
+        });
+
+        buy.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                amount = Double.parseDouble(amt.getText().toString());
+                if(amount<0.01)
+                {
+                    Toast.makeText(getApplicationContext(),"Error: Can't buy Less than 0.01 stock", Toast.LENGTH_SHORT).show();
+                }
+                else if(amount*price>balance)
+                {
+                    Toast.makeText(getApplicationContext(),"Error: Not Enough Money in Account", Toast.LENGTH_SHORT).show();
+                }
+                else
+                {
+                    SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                    Date date = new Date();
+                    String time = formatter.format(date);
+
+                    Transaction transaction = new Transaction(name, time, "BUY", price, amount);
+                    user.addTransactions(transaction);
+                    user.purchase(amount*price);
+
+                    reference.child(user.getUsername()).setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(Task<Void> task) {
+                            balance = user.getMoney();
+                            balanceText.setText("Balance: $"+String.format("%.2f",balance));
+                            Toast.makeText(getApplicationContext(),"Success! Bought "+amount+" share(s) of "+name, Toast.LENGTH_SHORT).show();
+                        }
+                    });
                 }
             }
         });
@@ -264,15 +308,6 @@ public class StockView extends AppCompatActivity {
                     graph.addSeries(series);
                 }
 
-//                buy.setOnClickListener(new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View view) {
-//                        startinPrice -= priceList.get(priceList.size()-1);
-//                        Log.d("Hi", "" + startinPrice);
-//                    }
-//                });
-
-//                Log.d("Hi", "" + startinPrice);
             } catch (Exception e) {
                 Toast.makeText(getApplicationContext(),"Error: Invalid Stock. Try Again", Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(StockView.this, Stocks.class);

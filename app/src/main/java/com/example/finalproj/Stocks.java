@@ -43,7 +43,7 @@ public class Stocks extends AppCompatActivity {
         moneyText = findViewById(R.id.textView4);
 
         User user = (User) getIntent().getSerializableExtra("user");
-        moneyText.setText("Balance: "+user.getMoney());
+        moneyText.setText("Balance: $"+String.format("%.2f",user.getMoney()));
         getDetails.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
