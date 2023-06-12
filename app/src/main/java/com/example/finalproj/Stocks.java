@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
@@ -48,13 +49,14 @@ public class Stocks extends AppCompatActivity {
 
     EditText stockName;
     Button getDetails;
-    TextView moneyText, newsText, linkText;
+    TextView moneyText, newsText, linkText, valText, profitText;
     ListView listView;
     User user;
     DatabaseReference reference;
     double balance = 0;
     CustomAdapter adapter;
     ImageView historyView, settingsView;
+    double totalVal = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +71,8 @@ public class Stocks extends AppCompatActivity {
         settingsView = findViewById(R.id.imageView2);
         newsText = findViewById(R.id.newsText);
         linkText = findViewById(R.id.newsText2);
+        valText = findViewById(R.id.valutation);
+        profitText = findViewById(R.id.profit);
 
         reference = FirebaseDatabase.getInstance().getReference("users");
 
@@ -145,7 +149,14 @@ public class Stocks extends AppCompatActivity {
             Button news = adapterLayout.findViewById(R.id.newsButton);
 
             Portfolio port = portfolios.get(position);
-            new AsyncThread().execute(new AsyncParams(null, 1, port.getName(), priceText, totalText, port.getAmount()));//1->stock price, 2->stock name, 3->stock news
+            if(position+1==portfolios.size())
+            {
+                new AsyncThread().execute(new AsyncParams(null, 1, port.getName(), priceText, totalText, port.getAmount(), true));//1->stock price, 2->stock name, 3->stock news
+            }
+            else
+            {
+                new AsyncThread().execute(new AsyncParams(null, 1, port.getName(), priceText, totalText, port.getAmount()));//1->stock price, 2->stock name, 3->stock news
+            }
             new AsyncThread().execute(new AsyncParams(null, 2, port.getName(), nameText));//1->stock price, 2->stock name, 3->stock news
 
             idText.setText(port.getName());
@@ -258,6 +269,14 @@ public class Stocks extends AppCompatActivity {
             inside = false;
         }
 
+        for(int f=portfolios.size()-1; f>=0; f--)
+        {
+            if(portfolios.get(f).getAmount()==0)
+            {
+                portfolios.remove(f);
+            }
+        }
+
         return portfolios;
     }
 
@@ -304,7 +323,7 @@ public class Stocks extends AppCompatActivity {
                 AsyncParams result = new AsyncParams(json, action, name, textView);
                 if(action==1)
                 {
-                    result = new AsyncParams(json, action, name, textView, totalView, shares);
+                    result = new AsyncParams(json, action, name, textView, totalView, shares, params.isLast());
                 }
 
                 return result;
@@ -332,6 +351,28 @@ public class Stocks extends AppCompatActivity {
                     double currPrice = json.getDouble("c");
                     text.setText("$"+String.format("%.2f",currPrice));
                     total.setText("$"+String.format("%.2f",currPrice*shares));
+                    totalVal+=currPrice*shares;
+                    if(params.isLast())
+                    {
+                        double possible = totalVal+user.getMoney();
+                        valText.setText("Valuation: $"+String.format("%.2f",possible));
+                        double profit = possible - 10000;
+                        if(profit<0)
+                        {
+                            profitText.setTextColor(Color.rgb(220,20,60));
+                            profitText.setText("Loss: -$"+String.format("%.2f",profit));
+                        }
+                        else if(profit>0)
+                        {
+                            profitText.setTextColor(Color.rgb(50,205,50));
+                            profitText.setText("Profit: +$"+String.format("%.2f",profit));
+                        }
+                        else
+                        {
+                            profitText.setTextColor(Color.BLACK);
+                            profitText.setText("No Gain: +$"+String.format("%.2f",profit));
+                        }
+                    }
                 }
                 else if(action==2)
                 {

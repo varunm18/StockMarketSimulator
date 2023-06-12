@@ -239,7 +239,8 @@ public class StockView extends AppCompatActivity {
                 URL url;
                 if(first)
                 {
-                    url = new URL("https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol="+name+"&interval=60min&apikey=QVU2FF3Q9NWDO8U1");
+                    url = new URL("https://finnhub.io/api/v1/quote?symbol="+name+"&token=ci34231r01qmam6c1so0ci34231r01qmam6c1sog");
+//                    url = new URL("https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol="+name+"&interval=60min&apikey=QVU2FF3Q9NWDO8U1");
                 }
                 else
                 {
@@ -281,9 +282,7 @@ public class StockView extends AppCompatActivity {
             try {
                 if(first)
                 {
-                    JSONObject time = json.getJSONObject("Time Series (60min)");
-                    JSONArray arr = time.names();
-                    price = Double.parseDouble(time.getJSONObject((String)arr.get(0)).getString("1. open"));
+                    price = json.getDouble("c");
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {

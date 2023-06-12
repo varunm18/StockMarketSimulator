@@ -10,6 +10,17 @@ public class AsyncParams{
     String name;
     TextView text, total;
     double shares;
+    boolean last;
+
+    public AsyncParams(JSONObject json, int action, String name, TextView text, TextView total, double shares, boolean last) {
+        this.json = json;
+        this.action = action;
+        this.name = name;
+        this.text = text;
+        this.total = total;
+        this.shares = shares;
+        this.last = last;
+    }
 
     public AsyncParams(JSONObject json, int action, String name, TextView text, TextView total, double shares) {
         this.json = json;
@@ -18,6 +29,7 @@ public class AsyncParams{
         this.text = text;
         this.total = total;
         this.shares = shares;
+        last = false;
     }
 
     public AsyncParams(JSONObject json, int action, String name, TextView text) {
@@ -27,6 +39,7 @@ public class AsyncParams{
         this.text = text;
         total = null;
         shares = 0;
+        last = false;
     }
 
     public JSONObject getJson() {
@@ -51,5 +64,9 @@ public class AsyncParams{
 
     public double getShares() {
         return shares;
+    }
+
+    public boolean isLast() {
+        return last;
     }
 }
