@@ -184,10 +184,17 @@ public class StockView extends AppCompatActivity {
         buy.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                amount = Double.parseDouble(amt.getText().toString());
+                try{
+                    amount = Double.parseDouble(amt.getText().toString());
+                }
+                catch(Exception e)
+                {
+                    amount = 0;
+                }
+
                 if(amount<0.01)
                 {
-                    Toast.makeText(getApplicationContext(),"Error: Can't buy Less than 0.01 stock", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(),"Error: Can't buy less than 0.01 shares", Toast.LENGTH_SHORT).show();
                 }
                 else if(amount*price>balance)
                 {

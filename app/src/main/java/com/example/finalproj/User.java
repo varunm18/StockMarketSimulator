@@ -48,6 +48,11 @@ public class User implements Serializable {
         this.money-=money;
     }
 
+    public void sell(double money)
+    {
+        this.money+=money;
+    }
+
     public ArrayList<Transaction> getTransactions() {
         return transactions;
     }
