@@ -154,6 +154,8 @@ public class Stocks extends AppCompatActivity {
             news.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    newsText.setText("Loading...");
+                    linkText.setText("");
                     new AsyncThreadNews().execute(new NewsParams(port.getName(), null));//1->stock price, 2->stock name, 3->stock news
                 }
             });
