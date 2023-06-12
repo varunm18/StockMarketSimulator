@@ -16,6 +16,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -52,6 +53,8 @@ public class Stocks extends AppCompatActivity {
     User user;
     DatabaseReference reference;
     double balance = 0;
+    CustomAdapter adapter;
+    ImageView historyView, settingsView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +65,8 @@ public class Stocks extends AppCompatActivity {
         getDetails = findViewById(R.id.getDetails);
         moneyText = findViewById(R.id.balanceT);
         listView = findViewById(R.id.list_id);
+        historyView = findViewById(R.id.imageView);
+        settingsView = findViewById(R.id.imageView2);
 
         reference = FirebaseDatabase.getInstance().getReference("users");
 
@@ -71,14 +76,14 @@ public class Stocks extends AppCompatActivity {
 
         ArrayList<Portfolio> portfolios = TransactionsToPortfolio(user.getTransactions());
 
-        CustomAdapter adapter = new CustomAdapter(this, R.layout.adapter_layout, portfolios);
+        adapter = new CustomAdapter(this, R.layout.adapter_layout, portfolios);
         listView.setAdapter(adapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Toast.makeText(getApplicationContext(), i + "", Toast.LENGTH_LONG).show();
-            }
-        });
+//        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+//                Toast.makeText(getApplicationContext(), i + "", Toast.LENGTH_LONG).show();
+//            }
+//        });
 
         getDetails.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -89,6 +94,22 @@ public class Stocks extends AppCompatActivity {
                 intent.putExtra("user", user);
                 startActivity(intent);
                 Log.d("pOOP","HI");
+            }
+        });
+
+        historyView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(Stocks.this, History.class);
+                intent.putExtra("user", user);
+                startActivity(intent);
+            }
+        });
+
+        settingsView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
             }
         });
     }
@@ -164,6 +185,9 @@ public class Stocks extends AppCompatActivity {
                                 balance = user.getMoney();
                                 moneyText.setText("Balance: $"+String.format("%.2f",balance));
                                 Toast.makeText(getApplicationContext(),"Success! Sold "+amt+" share(s) of "+port.getName(), Toast.LENGTH_SHORT).show();
+                                portfolios = TransactionsToPortfolio(user.getTransactions());
+                                adapter = new CustomAdapter(Stocks.this, R.layout.adapter_layout, portfolios);
+                                listView.setAdapter(adapter);
                             }
                         });
                     }
@@ -185,16 +209,6 @@ public class Stocks extends AppCompatActivity {
             int index = 0;
             Transaction trans = transactions.get(i);
             Log.d("hi", "Run "+i+", "+index+": "+portfolios.size());
-            if(portfolios.size()==0)
-            {
-                if(trans.getType().equals("BUY")) {
-                    portfolios.add(new Portfolio(trans.getName(), trans.getAmount()));
-                }
-                else
-                {
-                    portfolios.add(new Portfolio(trans.getName(), -1*trans.getAmount()));
-                }
-            }
             for(int j=0; j<portfolios.size(); j++)
             {
                 if(!inside)

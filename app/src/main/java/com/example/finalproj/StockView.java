@@ -4,7 +4,6 @@ package com.example.finalproj;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -41,12 +40,10 @@ import java.net.URLConnection;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.Year;
-import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
-import java.util.Scanner;
 
 import androidx.core.util.Pair;
 
@@ -79,7 +76,7 @@ public class StockView extends AppCompatActivity {
         increment = (ElegantNumberButton)findViewById(R.id.number_button);
         dateText = findViewById(R.id.date);
         priceText = findViewById(R.id.price);
-        back = findViewById(R.id.back);
+        back = findViewById(R.id.backButton);
         buy = findViewById(R.id.buy);
         amt = findViewById(R.id.amount);
         dateButton = findViewById(R.id.changeDate);

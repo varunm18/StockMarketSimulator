@@ -69,7 +69,7 @@
         app:layout_constraintVertical_bias="0.973" />
 
     <Button
-        android:id="@+id/back"
+        android:id="@+id/backButton"
         android:layout_width="91dp"
         android:layout_height="39dp"
         android:text="&lt;-back"

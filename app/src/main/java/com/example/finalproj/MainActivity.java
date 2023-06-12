@@ -46,7 +46,14 @@ public class MainActivity extends AppCompatActivity {
                 username = usernameEdit.getText().toString();
                 password = passwordEdit.getText().toString();
 
-                login(username, password);
+                if(username.length()>0&&password.length()>1)
+                {
+                    login(username, password);
+                }
+                else
+                {
+                    Toast.makeText(getApplicationContext(),"Error: Enter Username and Password", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -56,7 +63,14 @@ public class MainActivity extends AppCompatActivity {
                 username = usernameEdit.getText().toString();
                 password = passwordEdit.getText().toString();
 
-                register(username, password);
+                if(username.length()>0&&password.length()>1)
+                {
+                    register(username, password);
+                }
+                else
+                {
+                    Toast.makeText(getApplicationContext(),"Error: Enter Username and Password", Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }

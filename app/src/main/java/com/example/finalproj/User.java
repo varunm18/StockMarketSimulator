@@ -1,12 +1,15 @@
 package com.example.finalproj;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 public class User implements Serializable {
     String username, password;
     double money;
     ArrayList<Transaction> transactions;
+    String date;
 
     public User() {
 
@@ -17,6 +20,9 @@ public class User implements Serializable {
         this.password = password;
         this.money = money;
         this.transactions = transactions;
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+        LocalDateTime now = LocalDateTime.now();
+        date = dtf.format(now);
     }
 
     public String getUsername() {
@@ -59,5 +65,9 @@ public class User implements Serializable {
 
     public void addTransactions(Transaction transaction) {
         this.transactions.add(transaction);
+    }
+
+    public String getDate() {
+        return date;
     }
 }
