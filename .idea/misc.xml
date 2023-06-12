@@ -5,10 +5,11 @@
       <map>
         <entry key="app/src/main/res/layout/activity_history.xml" value="0.17514865403589824" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.165" />
+        <entry key="app/src/main/res/layout/activity_settings.xml" value="0.335" />
         <entry key="app/src/main/res/layout/activity_stock_view.xml" value="0.25" />
         <entry key="app/src/main/res/layout/activity_stocks.xml" value="0.28997912539089643" />
         <entry key="app/src/main/res/layout/adapter_history_layout.xml" value="0.1747990876301957" />
-        <entry key="app/src/main/res/layout/adapter_layout.xml" value="0.27177294159554916" />
+        <entry key="app/src/main/res/layout/adapter_layout.xml" value="0.335" />
       </map>
     </option>
   </component>

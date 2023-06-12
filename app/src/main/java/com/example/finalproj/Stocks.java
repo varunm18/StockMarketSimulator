@@ -48,7 +48,7 @@ public class Stocks extends AppCompatActivity {
 
     EditText stockName;
     Button getDetails;
-    TextView moneyText;
+    TextView moneyText, newsText, linkText;
     ListView listView;
     User user;
     DatabaseReference reference;
@@ -67,6 +67,8 @@ public class Stocks extends AppCompatActivity {
         listView = findViewById(R.id.list_id);
         historyView = findViewById(R.id.imageView);
         settingsView = findViewById(R.id.imageView2);
+        newsText = findViewById(R.id.newsText);
+        linkText = findViewById(R.id.newsText2);
 
         reference = FirebaseDatabase.getInstance().getReference("users");
 
@@ -78,12 +80,12 @@ public class Stocks extends AppCompatActivity {
 
         adapter = new CustomAdapter(this, R.layout.adapter_layout, portfolios);
         listView.setAdapter(adapter);
-//        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//            @Override
-//            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-//                Toast.makeText(getApplicationContext(), i + "", Toast.LENGTH_LONG).show();
-//            }
-//        });
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Toast.makeText(getApplicationContext(), i + "", Toast.LENGTH_LONG).show();
+            }
+        });
 
         getDetails.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -109,7 +111,9 @@ public class Stocks extends AppCompatActivity {
         settingsView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                Intent intent = new Intent(Stocks.this, Settings.class);
+                intent.putExtra("user", user);
+                startActivity(intent);
             }
         });
     }
@@ -138,6 +142,7 @@ public class Stocks extends AppCompatActivity {
             TextView totalText = adapterLayout.findViewById(R.id.total);
             EditText sellEdit = adapterLayout.findViewById(R.id.sellEditText);
             Button sell = adapterLayout.findViewById(R.id.sellButton);
+            Button news = adapterLayout.findViewById(R.id.newsButton);
 
             Portfolio port = portfolios.get(position);
             new AsyncThread().execute(new AsyncParams(null, 1, port.getName(), priceText, totalText, port.getAmount()));//1->stock price, 2->stock name, 3->stock news
@@ -145,6 +150,13 @@ public class Stocks extends AppCompatActivity {
 
             idText.setText(port.getName());
             sharesText.setText(""+String.format("%.2f",port.getAmount()));
+
+            news.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    new AsyncThreadNews().execute(new NewsParams(port.getName(), null));//1->stock price, 2->stock name, 3->stock news
+                }
+            });
 
             sell.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -327,6 +339,60 @@ public class Stocks extends AppCompatActivity {
 
             } catch (Exception e) {
                 e.printStackTrace();
+            }
+        }
+    }
+
+    public class AsyncThreadNews extends AsyncTask<NewsParams, Void, NewsParams>
+    {
+
+        @Override
+        protected NewsParams doInBackground(NewsParams... params) {
+            try {
+                JSONArray json;
+
+                String name = params[0].getName();
+
+                String time = java.time.LocalDate.now().toString();
+                URL url = new URL("https://finnhub.io/api/v1/company-news?symbol="+name+"&from="+time+"&to="+time+"&token=ci34231r01qmam6c1so0ci34231r01qmam6c1sog");
+
+                Log.d("url", url.toString());
+                URLConnection connect = url.openConnection();
+                InputStream stream = connect.getInputStream();
+                BufferedReader buffer = new BufferedReader(new InputStreamReader(stream));
+                String text = "";
+                String line = "";
+                while ((line = buffer.readLine()) != null) {
+                    text += line;
+                }
+                json = new JSONArray(text);
+
+                NewsParams result = new NewsParams(name, json);
+
+                return result;
+
+            } catch (JSONException | MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(NewsParams param) {
+            super.onPostExecute(param);
+            try{
+                JSONObject result = param.getJson().getJSONObject(0);
+                String newsHeadline = result.getString("headline");
+                String link = result.getString("url");
+                Log.d("hi", "names: "+result.toString());
+                newsText.setText(newsHeadline);
+                linkText.setText(link);
+            }
+            catch(Exception e)
+            {
+                newsText.setText("Couldn't find any recent news on "+param.getName());
             }
         }
     }
