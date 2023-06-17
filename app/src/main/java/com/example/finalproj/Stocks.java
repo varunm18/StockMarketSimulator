@@ -48,7 +48,7 @@ import java.util.List;
 public class Stocks extends AppCompatActivity {
 
     EditText stockName;
-    Button getDetails;
+    ImageView getDetails;
     TextView moneyText, newsText, linkText, valText, profitText;
     ListView listView;
     User user;
@@ -146,7 +146,7 @@ public class Stocks extends AppCompatActivity {
             TextView totalText = adapterLayout.findViewById(R.id.total);
             EditText sellEdit = adapterLayout.findViewById(R.id.sellEditText);
             Button sell = adapterLayout.findViewById(R.id.sellButton);
-            Button news = adapterLayout.findViewById(R.id.newsButton);
+            ImageView news = adapterLayout.findViewById(R.id.newsButton);
 
             Portfolio port = portfolios.get(position);
             if(position+1==portfolios.size())

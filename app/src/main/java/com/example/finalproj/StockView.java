@@ -4,6 +4,7 @@ package com.example.finalproj;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -85,6 +86,12 @@ public class StockView extends AppCompatActivity {
         nameText = findViewById(R.id.stockName);
         balanceText = findViewById(R.id.balance);
 
+        graph.getGridLabelRenderer().setGridColor(Color.WHITE);
+        graph.getGridLabelRenderer().setHighlightZeroLines(false);
+        graph.getGridLabelRenderer().setVerticalLabelsColor(Color.WHITE);
+        graph.getGridLabelRenderer().setHorizontalLabelsColor(Color.WHITE);
+        graph.getGridLabelRenderer().reloadStyles();
+
         reference = FirebaseDatabase.getInstance().getReference("users");
 
         name = getIntent().getStringExtra("name");
@@ -127,7 +134,8 @@ public class StockView extends AppCompatActivity {
         list.add("Quarter");
         list.add("Year");
 
-        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<String>(this, R.layout.support_simple_spinner_dropdown_item, list);
+        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<String>(this, R.layout.spinner_list, list);
+        spinnerAdapter.setDropDownViewResource(R.layout.spinner_list);
         dropdown.setAdapter(spinnerAdapter);
         dropdown.setPrompt("Select Interval");
         dropdown.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -240,7 +248,6 @@ public class StockView extends AppCompatActivity {
                 if(first)
                 {
                     url = new URL("https://finnhub.io/api/v1/quote?symbol="+name+"&token=ci34231r01qmam6c1so0ci34231r01qmam6c1sog");
-//                    url = new URL("https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol="+name+"&interval=60min&apikey=QVU2FF3Q9NWDO8U1");
                 }
                 else
                 {
@@ -290,6 +297,13 @@ public class StockView extends AppCompatActivity {
                         }
                     });
                     first = false;
+                    if(price==0)
+                    {
+                        Toast.makeText(getApplicationContext(),"Error: Invalid Stock. Try Again", Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(StockView.this, Stocks.class);
+                        intent.putExtra("user", user);
+                        startActivity(intent);
+                    }
                 }
                 else
                 {
@@ -308,6 +322,9 @@ public class StockView extends AppCompatActivity {
                     {
                         Toast.makeText(getApplicationContext(),"Choose Larger Range for Graph", Toast.LENGTH_LONG).show();
                     }
+                    series.setColor(Color.WHITE);
+                    series.setDrawBackground(true);
+                    series.setDrawDataPoints(true);
                     graph.addSeries(series);
                 }
 
