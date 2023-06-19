@@ -296,7 +296,6 @@ public class StockView extends AppCompatActivity {
                             priceText.setText("Price per Share: $"+String.format("%.2f",price));
                         }
                     });
-                    first = false;
                     if(price==0)
                     {
                         Toast.makeText(getApplicationContext(),"Error: Invalid Stock. Try Again", Toast.LENGTH_SHORT).show();
@@ -304,6 +303,7 @@ public class StockView extends AppCompatActivity {
                         intent.putExtra("user", user);
                         startActivity(intent);
                     }
+                    first = false;
                 }
                 else
                 {
@@ -329,10 +329,14 @@ public class StockView extends AppCompatActivity {
                 }
 
             } catch (Exception e) {
-                Toast.makeText(getApplicationContext(),"Error: Invalid Stock. Try Again", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(StockView.this, Stocks.class);
-                intent.putExtra("user", user);
-                startActivity(intent);
+                if(first)
+                {
+                    Toast.makeText(getApplicationContext(),"Error: Invalid Stock. Try Again", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(StockView.this, Stocks.class);
+                    intent.putExtra("user", user);
+                    startActivity(intent);
+                }
+                Toast.makeText(getApplicationContext(),"Choose A Different Range for Graph", Toast.LENGTH_LONG).show();
                 e.printStackTrace();
             }
         }

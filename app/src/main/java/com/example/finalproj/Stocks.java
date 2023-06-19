@@ -202,6 +202,8 @@ public class Stocks extends AppCompatActivity {
                         user.addTransactions(transaction);
                         user.sell(amount*price);
 
+                        totalVal = 0;
+
                         double amt = amount;
 
                         reference.child(user.getUsername()).setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
