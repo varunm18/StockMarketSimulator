@@ -2,7 +2,7 @@
 
 Final Project for Mobile Application Development Class
 
-Stock Market Simulator made in Android Studio
+Stock Market Simulator made in Android Studio using Java
 
 ### Details:
 * Login and Register Page that is used to Save Data per User with Firebase's Realtime Database
